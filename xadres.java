@@ -1,15 +1,20 @@
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.*;
 import java.util.Scanner;
-import java.net.URI;
+
+class xadresx{
+    private byte lapide;
+    private int length;
+    private byte[] data;
+
+    xadresx(){
+
+    }
+}
 
 class Chess {
     private byte lapide;
     private int size;
-    private int data;
+    private byte[] data;
     private short game_id;
     private String created_at;
     private String last_move_at;
@@ -28,6 +33,7 @@ class Chess {
     }
 
     public void Read(String text){
+        //Tratamento dos Dados
         String[] textodiv;
         textodiv = text.split(",");
         game_id = Short.parseShort(textodiv[0].replace("\"",""));
@@ -43,8 +49,6 @@ class Chess {
         moves = textodiv[10].replace("\"","");
         opening_name = textodiv[11].replace("\"",""); 
 
-        
-        
     }
 
     public String toString(){
@@ -57,14 +61,39 @@ class Chess {
 
 
 public class xadres {
+    public static byte[] lerBase(String path){
+        byte[] b = null;
+
+        try {
+            RandomAccessFile arquivo = new RandomAccessFile(path, "r");
+            arquivo.read(b);
+            arquivo.close();
+        } catch (FileNotFoundException e) {
+            System.err.println("Arquivo não encontrado\n" + e.toString());
+        } catch (IOException e){
+            System.err.println("Erro!\n" + e.toString());
+        }
+
+        return b;
+    }
+
     public static void main(String[] args) {
+        String pathArquivo = "games-3-_2_.csv";
+        byte[] dados = lerBase(pathArquivo);
+
+        for(byte b : dados){
+            
+        }
+
         //String nomeArquivo = "./games-3-_2_.csv";
         //BufferedReader arq = new BufferedReader(new InputStreamReader(new FileInputStream("\\games-3-_2_.csv")));
         String texto;
         Scanner ler = new Scanner(System.in);
         texto = ler.nextLine();
-        Chess test =  new Chess();
+        Chess test = new Chess();
         test.Read(texto);
+
+        
 
         System.out.println(test.toString());
 
