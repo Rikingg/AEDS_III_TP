@@ -1,7 +1,7 @@
 import java.io.*;
-import java.util.Scanner;
 import java.io.RandomAccessFile.*;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.Scanner;
 
 class xadresx{
     private byte lapide;
@@ -119,10 +119,11 @@ public class xadres {
             RandomAccessFile arquivo = new RandomAccessFile(path, "r");
             RandomAccessFile arquivoCsv = null;
             
-            if (!f.exists()) {
+            if (f.createNewFile()) {
                 arquivoCsv = new RandomAccessFile(baseDeDados, "rw");
                 arquivoCsv.writeInt(0);
 
+                arquivo.readLine(); //para pular a primeira linha que identifica as colunas
                 for(long i=0; i<arquivo.length(); i++){
                     data.create(arquivo.readLine(), arquivoCsv);
                 }
@@ -137,9 +138,11 @@ public class xadres {
         }
     }
 
-    public static void crudCreate(String path){
+    public static void crudCreate(String baseDeDados){
         try {
-            RandomAccessFile arquivo = new RandomAccessFile(path, "rw");
+            Chess data = new Chess();
+            RandomAccessFile arquivo = new RandomAccessFile(baseDeDados, "rw");
+
 
             
             arquivo.close();
@@ -148,7 +151,21 @@ public class xadres {
         }
     }
 
-    public static void main(String[] args) {       
+    public static void crudRead(int id, String baseDeDados){
+        try {
+            Chess data = new Chess();
+            RandomAccessFile arquivo = new RandomAccessFile(baseDeDados, "rw");
+
+
+            
+            arquivo.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);       
         String nomeArquivo = "games-3-_2_.csv";
         String nomeBaseDeDados = "base\\meuarquivo.txt";
         lerBase(nomeArquivo, nomeBaseDeDados);
@@ -156,6 +173,8 @@ public class xadres {
         int controle = 0;
         System.out.println();
         while(controle != 5){
+            System.out.println("\nDigite o número da operação: ");
+            controle = scanner.nextInt();
             switch (controle) {
                 case 1:
                     //create
@@ -163,6 +182,9 @@ public class xadres {
 
                 case 2:
                     //read
+                    System.out.println("Digite o ID do qual deseja pesquisar: ");
+                    int id = scanner.nextInt();
+                    crudRead(id, nomeBaseDeDados);
                 break;
 
                 case 3:
@@ -182,10 +204,7 @@ public class xadres {
                 break;
             }
         }
-        
-
-        System.out.println(test.toString());
-
+        scanner.close();
     }
 }
 
