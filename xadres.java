@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.Scanner;
+import java.io.RandomAccessFile.*;
 
 class xadresx{
     private byte lapide;
@@ -66,7 +67,8 @@ public class xadres {
 
         try {
             RandomAccessFile arquivo = new RandomAccessFile(path, "r");
-            arquivo.read(b);
+            arquivo.seek(0);
+            System.out.println(arquivo.readLine());
             arquivo.close();
         } catch (FileNotFoundException e) {
             System.err.println("Arquivo não encontrado\n" + e.toString());
@@ -82,7 +84,7 @@ public class xadres {
         byte[] dados = lerBase(pathArquivo);
 
         for(byte b : dados){
-            
+            System.out.println(b);
         }
 
         //String nomeArquivo = "./games-3-_2_.csv";
