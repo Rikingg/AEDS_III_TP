@@ -1,5 +1,6 @@
 import java.io.*;
 import java.io.RandomAccessFile.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.Random;
 import java.util.Scanner;
@@ -59,7 +60,7 @@ class Chess {
 
         String[] data;
         data = textodiv[1].split(" ");
-        created_at = data[0];
+        created_at = data[0].replace("\"","");
         turns = Short.parseShort(textodiv[2].replace("\"",""));
         victory_status = textodiv[3].replace("\"","");
         winner = textodiv[4].replace("\"","");
@@ -140,7 +141,7 @@ class Chess {
 
     public int calcSize(){
         int temp;
-        temp = 4 + 4 + created_at.getBytes().length + 4 + winner.getBytes().length + 4 + white_id.getBytes().length + 4 + black_id.getBytes().length + 4 + moves.getBytes().length  ;
+        temp = 4 + 4 + created_at.getBytes().length + 4 + 4 + victory_status.getBytes().length +  4 + winner.getBytes().length + 4 + white_id.getBytes().length + 4 + black_id.getBytes().length + 4 + calcMultiString(moves).getBytes().length;
 
         return temp ;
     }
@@ -161,7 +162,7 @@ class Chess {
         return tt;
     }*/
 
-    public void Read(int id, RandomAccessFile arquivoCsv) {
+   public void Read(int id, RandomAccessFile arquivoCsv) {
        try {
             int idArquivo = 0;
             arquivoCsv.seek(0);
@@ -172,28 +173,49 @@ class Chess {
                     System.out.println("Id do arquivo: " + idArquivo);
                     int count = arquivoCsv.readInt();
                     byte[] b = new byte[count];
-                    System.out.println("Criado em : " + arquivoCsv.read(b));
-                    System.out.println("Quantidade de Turnos : " + arquivoCsv.readInt());
+                    System.out.print("Criado em: ");
+                    arquivoCsv.readFully(b);
+                    System.out.println(new String(b, StandardCharsets.UTF_8));
+                    System.out.println("Quantidade de Turnos: " + arquivoCsv.readInt());
                     count = arquivoCsv.readInt();
                     b = new byte[count];
-                    System.out.println("Status de Vitoria : " + arquivoCsv.read(b));
+                    System.out.print("Status de Vitoria: ");
+                    arquivoCsv.readFully(b);
+                    System.out.println(new String(b, StandardCharsets.UTF_8));
                     count = arquivoCsv.readInt();
                     b = new byte[count];
-                    System.out.println("Vencedor : " + arquivoCsv.read(b));
+                    System.out.print("Vencedor : ");
+                    arquivoCsv.readFully(b);
+                    System.out.println(new String(b, StandardCharsets.UTF_8));
                     count = arquivoCsv.readInt();
                     b = new byte[count];
-                    System.out.println("White Id : " + arquivoCsv.read(b));
+                    System.out.print("White Id: ");
+                    arquivoCsv.readFully(b);
+                    System.out.println(new String(b, StandardCharsets.UTF_8));
                     count = arquivoCsv.readInt();
                     b = new byte[count];
-                    System.out.println("Black Id : " + arquivoCsv.read(b));
-                    System.out.println("Quantidade de Movimentos : " + arquivoCsv.readInt());
-                    while (condition:var(boolean)) {
+                    System.out.print("Black Id: ");
+                    arquivoCsv.readFully(b);
+                    System.out.println(new String(b, StandardCharsets.UTF_8));
+                    int qt = arquivoCsv.readInt();
+                    System.out.println("Quantidade de Movimentos: " + qt );
+                    
+                    System.out.print("Moves: ");
+
+                    for (int j = 0; j < qt ; j++) {
+                        b = new byte[1];
+                        arquivoCsv.readFully(b);
+                        count = Integer.parseInt((new String(b, StandardCharsets.UTF_8)));
+                        b = new byte[count];
+                        arquivoCsv.readFully(b);
+                        System.out.print(new String(b, StandardCharsets.UTF_8));
+                        System.out.print(" ");
                         
                     }
                     break;
                 }else{
                     if(idArquivo != 0){
-                        arquivoCsv.seek(tamanho - 4);
+                        arquivoCsv.seek(arquivoCsv.getFilePointer() + tamanho - 4);
                     }
                 }
                 arquivoCsv.readByte();
@@ -208,7 +230,11 @@ class Chess {
     }
 
     public void Update(int id, RandomAccessFile arquivoCsv){
-        
+        try {
+            
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     public String formatString(){
@@ -286,7 +312,6 @@ public class xadres {
             info = info + scanner.nextLine() +"\"";
 
 
-            System.out.println(info);
             data.create(info, arquivoCsv);
             
             arquivoCsv.close();
@@ -297,6 +322,19 @@ public class xadres {
     }
 
     public static void crudRead(int id, String baseDeDados){
+        try {
+            Chess data = new Chess();
+            RandomAccessFile arquivo = new RandomAccessFile(baseDeDados, "rw");
+
+            data.Read(id, arquivo);
+            
+            arquivo.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+
+    public static void crudUpdate(int id, String baseDeDados){
         try {
             Chess data = new Chess();
             RandomAccessFile arquivo = new RandomAccessFile(baseDeDados, "rw");
@@ -334,6 +372,7 @@ public class xadres {
 
                 case 3:
                     //update
+                    crudCreate(nomeBaseDeDados);
                 break;
 
                 case 4:
@@ -342,7 +381,7 @@ public class xadres {
 
                 case 5:
                     //sair
-                break; 
+                break;
             
                 default:
                     System.out.println("Opção ínvalida.");
