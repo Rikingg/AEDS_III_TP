@@ -1,6 +1,7 @@
 import java.io.*;
 import java.io.RandomAccessFile.*;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.Random;
 import java.util.Scanner;
 
 class xadresx{
@@ -32,32 +33,80 @@ class Chess {
     Chess(){
     }
 
-    public void ReadIni(String text){
+    public void ReadIni(String text, RandomAccessFile arquivoCsv){
         String[] textodiv;
         textodiv = text.split(",");
         game_id = Short.parseShort(textodiv[0].replace("\"",""));
-        created_at = textodiv[1].replaceAll("[\"/: ]", "");
-        turns = Short.parseShort(textodiv[3].replace("\"",""));
-        victory_status = textodiv[4].replace("\"","");
-        winner = textodiv[5].replace("\"","");
-        white_id = textodiv[7].replace("\"","");
-        black_id = textodiv[8].replace("\"","");
-        qt_of_moves = Byte.parseByte(textodiv[9].replace("\"",""));
-        moves = textodiv[10].replace("\"","");      
-        
+        if (game_id == 0) {
+            try{
+                int temp = 0;
+                arquivoCsv.seek(0);
+                temp = arquivoCsv.readInt();
+                temp = temp + 1;
+                String tempp = "" + temp;
+                game_id = Short.parseShort(tempp);
+            }catch(Exception e){
+
+            }
+            
+        }
+        try{
+            arquivoCsv.seek(0);
+            arquivoCsv.writeInt(game_id);
+        }catch(Exception e){
+            System.out.println("erro");
+        }
+
+        String[] data;
+        data = textodiv[1].split(" ");
+        created_at = data[0];
+        turns = Short.parseShort(textodiv[2].replace("\"",""));
+        victory_status = textodiv[3].replace("\"","");
+        winner = textodiv[4].replace("\"","");
+        white_id = textodiv[5].replace("\"","");
+        black_id = textodiv[6].replace("\"","");
+        qt_of_moves = Byte.parseByte(textodiv[7].replace("\"",""));
+        moves = textodiv[8].replace("\"","");
     }
 
     public void create(String text ,RandomAccessFile arquivoCsv){
         
         try{ 
-            ReadIni(text);
+            ReadIni(text,arquivoCsv);
             byte[] bt;
-            bt = toString().getBytes();            
+            //bt = this.ToString();         
             arquivoCsv.seek(0);
             arquivoCsv.readInt();
             arquivoCsv.seek(arquivoCsv.length());
-            arquivoCsv.write(bt);
-            arquivoCsv.close();
+            
+            arquivoCsv.writeByte(lapide);
+            
+            arquivoCsv.writeInt(calcSize());
+            
+            arquivoCsv.writeInt(game_id);
+            
+            arquivoCsv.writeInt(calcString(created_at));
+            arquivoCsv.write(created_at.getBytes());
+
+            arquivoCsv.writeInt(turns);
+
+            arquivoCsv.writeInt(calcString(victory_status));
+            arquivoCsv.write(victory_status.getBytes());
+
+            arquivoCsv.writeInt(calcString(winner));
+            arquivoCsv.write(winner.getBytes());
+
+            arquivoCsv.writeInt(calcString(white_id));
+            arquivoCsv.write(white_id.getBytes());
+
+            arquivoCsv.writeInt(calcString(black_id));
+            arquivoCsv.write(black_id.getBytes());
+
+            arquivoCsv.writeInt(qt_of_moves);            
+            
+            arquivoCsv.write(calcMultiString(moves).getBytes());
+            
+
         } catch (FileNotFoundException e) {
             System.err.println("Arquivo não encontrado\n" + e.toString());
         } catch (IOException e){
@@ -71,7 +120,7 @@ class Chess {
        String[] textodiv =  texto.split(" ");
 
        while (textodiv.length > count) {
-        tam = tam + textodiv[count].length() + textodiv[count];
+        tam = tam + textodiv[count].getBytes().length + textodiv[count];
         count++;
         
        }
@@ -83,7 +132,7 @@ class Chess {
     public int calcString(String texto){
         int tam = 0;
 
-        tam = texto.length();
+        tam = texto.getBytes().length;
 
         return tam;
 
@@ -91,26 +140,89 @@ class Chess {
 
     public int calcSize(){
         int temp;
-        temp = 4 + 2 + created_at.getBytes().length + 2 + winner.getBytes().length + white_id.getBytes().length + black_id.getBytes().length + 1 + moves.getBytes().length  ;
+        temp = 4 + 4 + created_at.getBytes().length + 4 + winner.getBytes().length + 4 + white_id.getBytes().length + 4 + black_id.getBytes().length + 4 + moves.getBytes().length  ;
 
         return temp ;
     }
 
-    public String toString(){
+   /* public byte[] ToString(){
         String texto;
-        String temp = String.valueOf(calcSize());
-        texto = lapide + temp +  game_id + calcString(created_at) +created_at + turns + calcString(winner) + winner  + calcString(white_id) + white_id + calcString(black_id) + black_id + qt_of_moves + calcMultiString(moves);        
-        return texto;
+        String temp = "";
+        int tam = Integer.parseInt(String.valueOf(calcSize()));
+        if (tam < 10 ){
+            temp = "000" + tam;
+        } else if (tam < 100 ){
+            temp = "00" + tam;
+        }else if (tam < 1000 ){
+            temp = "0" + tam;
+        }      
+        texto = lapide + temp +  game_id + calcString(created_at) +created_at +  turns  + calcString(victory_status) + victory_status + calcString(winner) + winner  + calcString(white_id) + white_id + calcString(black_id) + black_id + qt_of_moves + calcMultiString(moves);
+        byte[] tt = texto.getBytes();        
+        return tt;
+    }*/
+
+    public void Read(int id, RandomAccessFile arquivoCsv) {
+       try {
+            int idArquivo = 0;
+            arquivoCsv.seek(0);
+            arquivoCsv.readInt();
+            int tamanho = 0;
+            for(long i=0; i<arquivoCsv.length(); ){
+                if(id == idArquivo){
+                    System.out.println("Id do arquivo: " + idArquivo);
+                    int count = arquivoCsv.readInt();
+                    byte[] b = new byte[count];
+                    System.out.println("Criado em : " + arquivoCsv.read(b));
+                    System.out.println("Quantidade de Turnos : " + arquivoCsv.readInt());
+                    count = arquivoCsv.readInt();
+                    b = new byte[count];
+                    System.out.println("Status de Vitoria : " + arquivoCsv.read(b));
+                    count = arquivoCsv.readInt();
+                    b = new byte[count];
+                    System.out.println("Vencedor : " + arquivoCsv.read(b));
+                    count = arquivoCsv.readInt();
+                    b = new byte[count];
+                    System.out.println("White Id : " + arquivoCsv.read(b));
+                    count = arquivoCsv.readInt();
+                    b = new byte[count];
+                    System.out.println("Black Id : " + arquivoCsv.read(b));
+                    System.out.println("Quantidade de Movimentos : " + arquivoCsv.readInt());
+                    while (condition:var(boolean)) {
+                        
+                    }
+                    break;
+                }else{
+                    if(idArquivo != 0){
+                        arquivoCsv.seek(tamanho - 4);
+                    }
+                }
+                arquivoCsv.readByte();
+                tamanho = arquivoCsv.readInt();
+                
+                idArquivo = arquivoCsv.readInt();
+            }
+            
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
-    public void Read(int id) {
+    public void Update(int id, RandomAccessFile arquivoCsv){
         
+    }
+
+    public String formatString(){
+        String info = "\"";
+
+        return info;
     }
 
 }
 
 
 public class xadres {
+    static Scanner scanner = new Scanner(System.in);
+      
     public static void lerBase(String path, String baseDeDados){
   
         try {
@@ -123,13 +235,10 @@ public class xadres {
                 arquivoCsv = new RandomAccessFile(baseDeDados, "rw");
                 arquivoCsv.writeInt(0);
 
-                arquivo.readLine(); //para pular a primeira linha que identifica as colunas
-                for(long i=0; i<arquivo.length(); i++){
+                for(long i=0; i < 5; i++){
                     data.create(arquivo.readLine(), arquivoCsv);
                 }
             }
-
-            arquivo.close();
             
         } catch (FileNotFoundException e) {
             System.err.println("Arquivo não encontrado\n" + e.toString());
@@ -141,13 +250,49 @@ public class xadres {
     public static void crudCreate(String baseDeDados){
         try {
             Chess data = new Chess();
-            RandomAccessFile arquivo = new RandomAccessFile(baseDeDados, "rw");
+            RandomAccessFile arquivoCsv = new RandomAccessFile(baseDeDados, "rw");
 
+            String info = "\"";
+            String winner;
 
+            System.out.println("Data do jogo (d/M/yy): ");
+            info = info + scanner.nextLine() +"\"" + "," + "\"";
             
-            arquivo.close();
+            System.out.println("Total de turnos do jogo: ");
+            info = info + scanner.nextLine() +"\"" + "," + "\"";
+
+            System.out.println("Condição da vitória: ");
+            info = info + scanner.nextLine() +"\"" + "," + "\"";
+
+            System.out.println("Quem ganhou? ('white' ou 'black'): ");
+            winner = scanner.nextLine().toLowerCase();
+            while(!winner.equals("black") || !winner.equals("white")){
+                System.out.println("Favor digitar apenas 'white' ou 'black': ");
+                winner = scanner.nextLine();
+            }
+            info = info + winner +"\"" + "," + "\"";
+
+            System.out.println("Nome do jogador do tabuleiro branco: ");
+            info = info + scanner.nextLine() +"\"" + "," + "\"";
+
+            System.out.println("Nome do jogador do tabuleiro negro: ");
+            info = info + scanner.nextLine() +"\"" + "," +"\"";
+
+            System.out.println("Quantidade de movimentos: ");
+            info = info + scanner.nextLine() +"\"" + ","+ "\"";
+
+            System.out.println("Cite todos movimentos " + 
+                            "efetuados na partida, separados por espaços: ");
+            info = info + scanner.nextLine() +"\"";
+
+
+            System.out.println(info);
+            data.create(info, arquivoCsv);
+            
+            arquivoCsv.close();
+            scanner.close();
         } catch (Exception e) {
-            // TODO: handle exception
+            System.err.println("Erro!\n" + e.toString());
         }
     }
 
@@ -156,7 +301,7 @@ public class xadres {
             Chess data = new Chess();
             RandomAccessFile arquivo = new RandomAccessFile(baseDeDados, "rw");
 
-
+            data.Read(id, arquivo);
             
             arquivo.close();
         } catch (Exception e) {
@@ -164,8 +309,7 @@ public class xadres {
         }
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);       
+    public static void main(String[] args) {     
         String nomeArquivo = "games-3-_2_.csv";
         String nomeBaseDeDados = "base\\meuarquivo.txt";
         lerBase(nomeArquivo, nomeBaseDeDados);
@@ -178,6 +322,7 @@ public class xadres {
             switch (controle) {
                 case 1:
                     //create
+                    crudCreate(nomeBaseDeDados);
                 break;
 
                 case 2:
